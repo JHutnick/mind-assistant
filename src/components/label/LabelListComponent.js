@@ -6,9 +6,12 @@ import {connect} from "react-redux";
 import userService from "../../services/userService";
 import labelService from "../../services/labelService";
 import {createLabel, deleteLabel, findLabelsForGroup, updateLabel} from "../../actions/labelActions";
+import noteService from "../../services/noteService";
+import {findNotesForGroup} from "../../actions/noteActions";
 
 const UserService = new userService();
 const LabelService = new labelService();
+const NoteService = new noteService();
 
 class LabelListComponent extends React.Component {
     state = {
@@ -20,10 +23,6 @@ class LabelListComponent extends React.Component {
         editTitle: "",
         status: ""
     };
-
-    //TODO:
-    //Add functionality to determine if user or folder should be created
-    //Add functionality to choose label to change note display
 
     componentDidMount() {
         this.props.findCurrentUser();
@@ -43,14 +42,27 @@ class LabelListComponent extends React.Component {
 
     selectLabel = (labelId) => {
         const folderId = this.props.folderId;
-        if(folderId > 0){
-            this.props.history.push(`/folder/${folderId}/label/${labelId}`);
+        if(labelId === this.state.activeLabel){
+            if(folderId > 0){
+                this.props.findNotesForFolder(folderId);
+                this.props.history.push(`/folder/${folderId}`);
+            } else {
+                this.props.findNotesForUser(this.state.user.id);
+                this.props.history.push(`/`);
+            }
+            this.setState({
+                activeLabel: ""
+            });
         } else {
-            this.props.history.push(`/label/${labelId}`);
+            if(folderId > 0){
+                this.props.history.push(`/folder/${folderId}/label/${labelId}`);
+            } else {
+                this.props.history.push(`/label/${labelId}`);
+            }
+            this.setState({
+                activeLabel: labelId
+            });
         }
-        this.setState({
-            activeLabel: labelId
-        });
     };
 
     newTitle = (e) => {
@@ -157,7 +169,8 @@ class LabelListComponent extends React.Component {
 
 const stateToPropertyMapper = (state) => ({
     user: state.user.user,
-    labels: state.labels.labels
+    labels: state.labels.labels,
+    notes: state.notes.notes
 });
 const dispatchToPropertyMapper = (dispatch) => ({
     findCurrentUser: () => {
@@ -193,6 +206,16 @@ const dispatchToPropertyMapper = (dispatch) => ({
     updateLabel: (labelId, label) => {
         LabelService.updateLabel(labelId, label).then(status => {
             dispatch(updateLabel(labelId, label))
+        })
+    },
+    findNotesForUser: (userId) => {
+        NoteService.findNotesForUser(userId).then(notes => {
+            dispatch(findNotesForGroup(notes))
+        })
+    },
+    findNotesForFolder: (folderId) => {
+        NoteService.findNotesForFolder(folderId).then(notes => {
+            dispatch(findNotesForGroup(notes))
         })
     }
 });

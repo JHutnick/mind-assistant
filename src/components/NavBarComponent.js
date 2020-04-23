@@ -65,7 +65,7 @@ class NavBarComponent extends React.Component {
                                onChange={this.userNameChange}
                                className="form-control mr-sm-2"
                                type="search"
-                               placeholder="Search for User"
+                               placeholder="Search for User By Id"
                                aria-label="Search"/>
                         <Link to={`/profile/${this.state.userId}`}>
                             <button className="btn btn-outline-primary my-2 my-sm-0"
